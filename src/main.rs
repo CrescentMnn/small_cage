@@ -1,5 +1,10 @@
 use std::io::{Read, Write, self, BufRead};
 use std::net::{TcpListener, TcpStream};
+use aes::Aes256;
+use aes::cipher::{
+    BlockCipher, BlockEncrypt, BlockDecrypt, KeyInit,
+    generic_array::GenericArray, 
+};
 
 fn chat_set(stream: TcpStream) {
     let read_stream = stream.try_clone().expect("Failed to clone");
