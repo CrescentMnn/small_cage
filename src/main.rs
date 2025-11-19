@@ -96,7 +96,7 @@ fn chat_set(stream: TcpStream, cipher: Aes256Gcm, address: &str) {
     });
 
     let stdin = io::stdin();
-    println!("{}", "Start chatting (Ctrl+C to exit):".green());
+    println!("{}", "Start chatting (Ctrl+C to exit):".yellow());
     println!(); // Empty line for better readability
     
     for line in stdin.lock().lines() {
@@ -126,6 +126,8 @@ fn server_function(port: &str) -> std::io::Result<()> {
     let listener = TcpListener::bind(format!("0.0.0.0:{}", port))?;
     println!("{}", format!("******************************Encrypted P2P Chat - Listening on port {}...*************************", port).green());
     println!("{}", "Waiting for connection...\n".green());
+    println!("{}", format!("************************************************************\n\n").green());
+
 
     let (mut stream, addr) = listener.accept()?;
     println!("{}", format!("Connected to: {}\n", addr).green());
@@ -135,7 +137,7 @@ fn server_function(port: &str) -> std::io::Result<()> {
 
     #[cfg(debug_assertions)]
     {
-        println!("{}", "Created public and private pair...".green());
+        println!("{}", "Created public and private pair...".yellow());
         println!("{}", format!("Public Server Key: {:x?}", public_key.as_bytes()).blue());
     }
 
@@ -167,9 +169,10 @@ fn server_function(port: &str) -> std::io::Result<()> {
 }
 
 fn client_function(address: &str) -> std::io::Result<()> {
-    println!("{}", format!("*************************Encrypted P2P Chat - Connecting to {}...***************************", address).green());
+    println!("{}", format!("*************************Encrypted P2P Chat - Connecting to {}...******************************", address).green());
     let mut stream = TcpStream::connect(address)?;
     println!("{}", "Connected!\n".green());
+    println!("{}", format!("************************************************************\n\n").bright_blue());
 
     let peer_addr = stream.peer_addr()?;
 
