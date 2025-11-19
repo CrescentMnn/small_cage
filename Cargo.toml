@@ -6,4 +6,6 @@ edition = "2024"
 [dependencies]
 aes = "0.8.4"
 aes-gcm = "0.10.3"
+colored = "3.0.0"
+figlet-rs = "0.1.5"
 x25519-dalek = "2.0.1"
