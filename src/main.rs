@@ -97,18 +97,16 @@ fn chat_set(stream: TcpStream, cipher: Aes256Gcm, address: &str) {
 
     let stdin = io::stdin();
     println!("{}", "Start chatting (Ctrl+C to exit):".yellow());
-    println!(); // Empty line for better readability
+    println!(); 
     
     for line in stdin.lock().lines() {
         match line {
             Ok(message) => {
-                // Your messages in green
                 println!("{}: {}", 
                     format!("[{}]", my_addr).green().bold(),
                     message.green()
                 );
                 if let Err(e) = send_encrypted(&mut write_stream, &cipher, &message) {
-                    // Send errors in yellow (warnings)
                     println!("{}", format!("Failed to send message: {}", e).yellow());
                     break;
                 }
@@ -137,7 +135,7 @@ fn server_function(port: &str) -> std::io::Result<()> {
 
     #[cfg(debug_assertions)]
     {
-        println!("{}", "Created public and private pair...".yellow());
+        println!("{}", "Created public and private pair...".blue());
         println!("{}", format!("Public Server Key: {:x?}", public_key.as_bytes()).blue());
     }
 
@@ -172,7 +170,7 @@ fn client_function(address: &str) -> std::io::Result<()> {
     println!("{}", format!("*************************Encrypted P2P Chat - Connecting to {}...******************************", address).green());
     let mut stream = TcpStream::connect(address)?;
     println!("{}", "Connected!\n".green());
-    println!("{}", format!("************************************************************\n\n").bright_blue());
+    println!("{}", format!("************************************************************\n\n").green());
 
     let peer_addr = stream.peer_addr()?;
 
@@ -198,7 +196,6 @@ fn client_function(address: &str) -> std::io::Result<()> {
 fn main() {
     let args: Vec<String> = std::env::args().collect();
 
-    // Print green PGC logo
     if let Ok(standard_font) = FIGfont::standard() {
         if let Some(logo) = standard_font.convert("PGC") {
             println!("{}", logo.to_string().green().bold());
