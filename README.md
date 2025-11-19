@@ -4,7 +4,6 @@ PGC is a personal project, implemented to showcase my understanding of basic cry
 
 In order to implement this project we used popular and (so far) secure rust crates such as; `std::net` for tcp communication and sockets, `aes_gcm` for the aesgcm256 mode and `x25519_dalek` for the Diffie-Hellman Key Exchange.
 
-{small explanation of AES and DHKE, as well as mentioning this is only the shell of the future prtoject}
 
 ## Cryptographic functions
 
