@@ -69,18 +69,24 @@ fn receive_encrypted(stream: &mut TcpStream, cipher: &Aes256Gcm) -> std::io::Res
         .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))
 }
 
-fn chat_set(stream: TcpStream, cipher: Aes256Gcm) {
+fn chat_set(stream: TcpStream, cipher: Aes256Gcm, address: &str) {
     let read_stream = stream.try_clone().expect("Failed to clone");
     let mut write_stream = stream;
+    
+    let my_addr = write_stream.local_addr()
+        .map(|addr| addr.to_string())
+        .unwrap_or_else(|_| "Unknown".to_string());
 
     let read_cipher = cipher.clone();
+
+    let peer_addr_copy = address.to_string();
     std::thread::spawn(move || {
         let mut read_stream = read_stream;
 
         loop {
             match receive_encrypted(&mut read_stream, &read_cipher) {
                 Ok(message) => {
-                    println!("Them: {}", message.trim());
+                    println!("[{}]: {}", peer_addr_copy, message.trim());
                 }
                 Err(e) => {
                     println!("Connection closed or error: {}", e);
@@ -92,10 +98,10 @@ fn chat_set(stream: TcpStream, cipher: Aes256Gcm) {
 
     let stdin = io::stdin();
     println!("Start chatting (Ctrl+C to exit):\n");
-
     for line in stdin.lock().lines() {
         match line {
             Ok(message) => {
+                println!("[{}]: {}", my_addr, message);
                 if let Err(e) = send_encrypted(&mut write_stream, &cipher, &message) {
                     println!("Failed to send message: {}", e);
                     break;
@@ -111,7 +117,7 @@ fn chat_set(stream: TcpStream, cipher: Aes256Gcm) {
 
 fn server_function(port: &str) -> std::io::Result<()> {
     let listener = TcpListener::bind(format!("0.0.0.0:{}", port))?;
-    println!("Encrypted P2P Chat - Listening on port {}...", port);
+    println!("******************************Encrypted P2P Chat - Listening on port {}...*************************", port);
     println!("Waiting for connection...\n");
 
     let (mut stream, addr) = listener.accept()?;
@@ -144,15 +150,17 @@ fn server_function(port: &str) -> std::io::Result<()> {
 
     let cipher = Aes256Gcm::new_from_slice(&key).expect("Failed to create cipher");
 
-    chat_set(stream, cipher);
+    chat_set(stream, cipher, &addr.to_string());
     Ok(())
 }
 
 fn client_function(address: &str) -> std::io::Result<()> {
-    println!("Encrypted P2P Chat - Connecting to {}...", address);
+    println!("*************************Encrypted P2P Chat - Connecting to {}...***************************", address);
     let mut stream = TcpStream::connect(address)?;
     println!("Connected!\n");
-    
+
+    let peer_addr = stream.peer_addr()?;
+
     let private_key = EphemeralSecret::random_from_rng(OsRng);
     let public_key = PublicKey::from(&private_key);
 
@@ -168,7 +176,7 @@ fn client_function(address: &str) -> std::io::Result<()> {
     let key = *shared_secret.as_bytes();
 
     let cipher = Aes256Gcm::new_from_slice(&key).expect("Failed to create cipher");
-    chat_set(stream, cipher);
+    chat_set(stream, cipher, &peer_addr.to_string());
     Ok(())
 }
 
@@ -178,11 +186,11 @@ fn main() {
     if args.len() < 2 {
         println!("Encrypted P2P Chat Application");
         println!("\nUsage:");
-        println!("  Server mode: {} listen <port>", args[0]);
-        println!("  Client mode: {} connect <ip:port>", args[0]);
+        println!("Server mode: {} listen <port>", args[0]);
+        println!("Client mode: {} connect <ip:port>", args[0]);
         println!("\nExamples:");
-        println!("  {} listen 8080", args[0]);
-        println!("  {} connect 127.0.0.1:8080", args[0]);
+        println!("{} listen 8080", args[0]);
+        println!("{} connect 127.0.0.1:8080", args[0]);
         return;
     }
 
